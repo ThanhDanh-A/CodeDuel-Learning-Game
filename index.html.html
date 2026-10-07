@@ -1,0 +1,2021 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeDuel - Đấu Trường Trí Tuệ Python & C++</title>
+    <style>
+        :root {
+            --bg-dark: #0b0f19;
+            --bg-card: #121826;
+            --bg-card-hover: #1b2438;
+            --border-color: #243049;
+            --accent-cyan: #00f0ff;
+            --accent-magenta: #ff007f;
+            --accent-gold: #ffd600;
+            --accent-green: #00e676;
+            --accent-red: #ff1744;
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --font-code: 'Courier New', Courier, Consolas, Monaco, monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+
+        body {
+            background: radial-gradient(circle at 50% 20%, #151d33 0%, var(--bg-dark) 100%);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+
+        #duel-app {
+            width: 100%;
+            max-width: 1040px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            box-shadow: 0 0 50px rgba(0, 240, 255, 0.15), 0 20px 40px rgba(0, 0, 0, 0.6);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Header Bar */
+        header {
+            background: rgba(11, 15, 25, 0.85);
+            border-bottom: 1px solid var(--border-color);
+            padding: 14px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(8px);
+        }
+
+        .brand-title {
+            font-size: 20px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            cursor: pointer;
+        }
+
+        .brand-badge {
+            font-size: 11px;
+            background: rgba(0, 240, 255, 0.15);
+            border: 1px solid var(--accent-cyan);
+            color: var(--accent-cyan);
+            padding: 2px 8px;
+            border-radius: 12px;
+            -webkit-text-fill-color: initial;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-icon {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            width: 38px;
+            height: 38px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 17px;
+            transition: all 0.2s;
+        }
+
+        .btn-icon:hover {
+            background: rgba(0, 240, 255, 0.2);
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        /* Combat Arena Header (Player vs AI Bot or Bot vs Bot) */
+        .battle-header {
+            padding: 18px 24px;
+            background: linear-gradient(180deg, rgba(20, 29, 48, 0.6) 0%, rgba(18, 24, 38, 0) 100%);
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            gap: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .combatant-card {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .combatant-card.bot2 {
+            flex-direction: row-reverse;
+            text-align: right;
+        }
+
+        .avatar-frame {
+            width: 54px;
+            height: 54px;
+            border-radius: 12px;
+            background: #0f172a;
+            border: 2px solid var(--accent-cyan);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 26px;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+        }
+
+        .combatant-card.bot2 .avatar-frame {
+            border-color: var(--accent-magenta);
+            box-shadow: 0 0 15px rgba(255, 0, 127, 0.3);
+        }
+
+        .combatant-meta {
+            flex: 1;
+        }
+
+        .combatant-name {
+            font-size: 15px;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .combatant-card.bot2 .combatant-name {
+            justify-content: flex-end;
+        }
+
+        .hp-bar-outer {
+            height: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .hp-bar-fill {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, #00e676, #00f0ff);
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .combatant-card.bot2 .hp-bar-fill {
+            background: linear-gradient(90deg, #ff007f, #ff1744);
+        }
+
+        .hp-text {
+            font-size: 11px;
+            font-weight: bold;
+            color: var(--text-muted);
+            margin-top: 4px;
+            font-family: var(--font-code);
+        }
+
+        .vs-emblem {
+            font-size: 22px;
+            font-weight: 900;
+            color: var(--accent-gold);
+            text-shadow: 0 0 15px rgba(255, 214, 0, 0.6);
+            font-style: italic;
+        }
+
+        /* Turn Timer */
+        .timer-container {
+            padding: 0 24px;
+            margin-top: 10px;
+        }
+
+        .timer-bar-outer {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .timer-bar-fill {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-gold));
+            transition: width 0.1s linear;
+        }
+
+        /* Question Arena Body */
+        .arena-body {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .question-badge-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .category-tag {
+            font-size: 12px;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 6px;
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            color: var(--accent-cyan);
+        }
+
+        .combo-tag {
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--accent-gold);
+            text-shadow: 0 0 10px rgba(255, 214, 0, 0.5);
+        }
+
+        .question-prompt {
+            font-size: 17px;
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 1.5;
+        }
+
+        /* Code Snippet Box */
+        .code-box {
+            background: #080c14;
+            border: 1px solid #1e293b;
+            border-radius: 10px;
+            padding: 16px 20px;
+            font-family: var(--font-code);
+            font-size: 14px;
+            line-height: 1.6;
+            color: #cbd5e1;
+            overflow-x: auto;
+            white-space: pre;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5);
+            user-select: text;
+            -webkit-user-select: text;
+        }
+
+        .code-box .kw {
+            color: #ff7b72;
+            font-weight: bold;
+        }
+
+        .code-box .tp {
+            color: #79c0ff;
+        }
+
+        .code-box .fn {
+            color: #d2a8ff;
+            font-weight: bold;
+        }
+
+        .code-box .st {
+            color: #a5d6ff;
+        }
+
+        .code-box .cm {
+            color: #8b949e;
+            font-style: italic;
+        }
+
+        .code-box .nb {
+            color: #ffa657;
+        }
+
+        .code-box .pt {
+            color: #ff007f;
+            font-weight: bold;
+        }
+
+        /* Answer Choices Grid */
+        .choices-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 6px;
+        }
+
+        @media (max-width: 768px) {
+            .choices-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .choice-btn {
+            background: #151e30;
+            border: 1.5px solid var(--border-color);
+            border-radius: 10px;
+            padding: 14px 18px;
+            color: #f1f5f9;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-align: left;
+            transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+            outline: none;
+        }
+
+        .choice-btn:hover:not(:disabled) {
+            background: var(--bg-card-hover);
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .choice-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .choice-key {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            padding: 3px 8px;
+            font-size: 12px;
+            font-family: var(--font-code);
+            color: var(--accent-cyan);
+        }
+
+        .choice-btn.correct {
+            background: rgba(0, 230, 118, 0.2) !important;
+            border-color: var(--accent-green) !important;
+            color: #ffffff !important;
+            box-shadow: 0 0 20px rgba(0, 230, 118, 0.5) !important;
+        }
+
+        .choice-btn.incorrect {
+            background: rgba(255, 23, 68, 0.2) !important;
+            border-color: var(--accent-red) !important;
+            color: #ffffff !important;
+            box-shadow: 0 0 20px rgba(255, 23, 68, 0.5) !important;
+        }
+
+        .choice-btn.eliminated {
+            opacity: 0.25;
+            pointer-events: none;
+            text-decoration: line-through;
+        }
+
+        /* Tactical Skill Bar */
+        .skills-bar {
+            padding: 14px 24px;
+            background: rgba(9, 12, 20, 0.95);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .skills-label {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+        }
+
+        .skills-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .skill-btn {
+            padding: 7px 14px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-main);
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .skill-btn:hover:not(:disabled) {
+            background: rgba(0, 240, 255, 0.15);
+            border-color: var(--accent-cyan);
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+
+        .skill-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* Explanation Drawer Modal */
+        .explanation-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(5, 7, 14, 0.88);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+            z-index: 50;
+        }
+
+        .explanation-overlay.hidden {
+            display: none;
+        }
+
+        .explanation-card {
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            border-radius: 14px;
+            width: 100%;
+            max-width: 680px;
+            padding: 24px 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+        }
+
+        .result-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 18px;
+            font-weight: 900;
+            padding: 6px 16px;
+            border-radius: 8px;
+            align-self: flex-start;
+        }
+
+        .result-badge.win {
+            background: rgba(0, 230, 118, 0.15);
+            color: var(--accent-green);
+            border: 1px solid var(--accent-green);
+        }
+
+        .result-badge.lose {
+            background: rgba(255, 23, 68, 0.15);
+            color: var(--accent-red);
+            border: 1px solid var(--accent-red);
+        }
+
+        .explanation-title {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--accent-gold);
+        }
+
+        .explanation-text {
+            font-size: 14px;
+            line-height: 1.7;
+            color: #cbd5e1;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 3px solid var(--accent-cyan);
+            user-select: text;
+            -webkit-user-select: text;
+        }
+
+        .explanation-text code {
+            font-family: var(--font-code);
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: var(--accent-cyan);
+        }
+
+        .btn-next {
+            padding: 12px 28px;
+            background: linear-gradient(90deg, var(--accent-cyan), #0077ff);
+            color: #050711;
+            border: none;
+            border-radius: 8px;
+            font-weight: 800;
+            font-size: 15px;
+            cursor: pointer;
+            align-self: flex-end;
+            transition: all 0.2s;
+        }
+
+        .btn-next:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.6);
+        }
+
+        /* Start Screen & Game Over Overlay */
+        .screen-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(8, 11, 20, 0.95);
+            backdrop-filter: blur(12px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 30px;
+            z-index: 60;
+            overflow-y: auto;
+        }
+
+        .screen-overlay.hidden {
+            display: none;
+        }
+
+        .screen-title {
+            font-size: 38px;
+            font-weight: 900;
+            letter-spacing: 3px;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .screen-desc {
+            font-size: 15px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            max-width: 620px;
+            line-height: 1.6;
+        }
+
+        .config-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .config-card {
+            background: #141c2e;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px 18px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+            width: 170px;
+        }
+
+        .config-card:hover,
+        .config-card.selected {
+            border-color: var(--accent-cyan);
+            background: rgba(0, 240, 255, 0.1);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+            transform: translateY(-3px);
+        }
+
+        .config-card-icon {
+            font-size: 26px;
+            margin-bottom: 6px;
+        }
+
+        .config-card-title {
+            font-size: 14px;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        .config-card-sub {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .btn-battle {
+            padding: 14px 40px;
+            font-size: 16px;
+            font-weight: 900;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            background: linear-gradient(90deg, #ff007f, var(--accent-cyan));
+            color: #060912;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 0 25px rgba(0, 240, 255, 0.5);
+            transition: all 0.2s;
+        }
+
+        .btn-battle:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 35px rgba(255, 0, 127, 0.8);
+        }
+
+        /* Pause Menu Modal */
+        .pause-modal {
+            position: absolute;
+            inset: 0;
+            background: rgba(5, 7, 14, 0.92);
+            backdrop-filter: blur(14px);
+            z-index: 90;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .pause-modal.hidden {
+            display: none;
+        }
+
+        .pause-title {
+            font-size: 32px;
+            font-weight: 900;
+            color: var(--accent-gold);
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .btn-pause-action {
+            width: 240px;
+            padding: 12px 20px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            background: #151e30;
+            color: white;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-pause-action:hover {
+            border-color: var(--accent-cyan);
+            background: rgba(0, 240, 255, 0.15);
+            color: var(--accent-cyan);
+            transform: translateY(-2px);
+        }
+
+        /* ===================== LEARNING HUB ===================== */
+        .learn-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(5, 7, 14, 0.97);
+            backdrop-filter: blur(12px);
+            z-index: 80;
+            overflow-y: auto;
+            padding: 22px;
+        }
+
+        .learn-overlay.hidden {
+            display: none;
+        }
+
+        .learn-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+            position: sticky;
+            top: 0;
+            background: rgba(5, 7, 14, 0.96);
+            padding: 8px 0 14px;
+            z-index: 2;
+        }
+
+        .learn-title {
+            font-size: 26px;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .learn-subtitle {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-top: 3px;
+        }
+
+        .learn-close {
+            border: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, .06);
+            color: white;
+            border-radius: 9px;
+            padding: 9px 14px;
+            cursor: pointer;
+            font-weight: 800;
+        }
+
+        .learn-close:hover {
+            border-color: var(--accent-cyan);
+        }
+
+        .learn-tabs,
+        .learn-levels {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 9px;
+            margin-bottom: 14px;
+        }
+
+        .learn-tab,
+        .learn-level {
+            border: 1px solid var(--border-color);
+            background: #141c2e;
+            color: #e2e8f0;
+            border-radius: 9px;
+            padding: 9px 14px;
+            cursor: pointer;
+            font-weight: 800;
+            font-size: 13px;
+        }
+
+        .learn-tab.active,
+        .learn-level.active {
+            border-color: var(--accent-cyan);
+            background: rgba(0, 240, 255, .12);
+            color: var(--accent-cyan);
+            box-shadow: 0 0 14px rgba(0, 240, 255, .16);
+        }
+
+        .learn-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .learn-card {
+            background: #111827;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            cursor: pointer;
+            transition: .2s;
+        }
+
+        .learn-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--accent-cyan);
+            background: #182238;
+        }
+
+        .learn-card-term {
+            font-family: var(--font-code);
+            color: var(--accent-cyan);
+            font-size: 17px;
+            font-weight: 900;
+            margin-bottom: 7px;
+        }
+
+        .learn-card-meaning {
+            color: white;
+            font-weight: 800;
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+
+        .learn-card-short {
+            color: var(--text-muted);
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .learn-detail {
+            margin-top: 14px;
+            background: #0e1625;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 18px;
+            display: none;
+        }
+
+        .learn-detail.show {
+            display: block;
+        }
+
+        .learn-detail h3 {
+            color: var(--accent-gold);
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .learn-detail p {
+            color: #cbd5e1;
+            line-height: 1.65;
+            font-size: 14px;
+            margin: 7px 0;
+            user-select: text;
+            -webkit-user-select: text;
+        }
+
+        .learn-code {
+            background: #080c14;
+            border: 1px solid #1e293b;
+            border-radius: 9px;
+            padding: 13px;
+            margin-top: 10px;
+            font-family: var(--font-code);
+            color: #a5d6ff;
+            white-space: pre-wrap;
+            line-height: 1.55;
+            overflow-x: auto;
+            user-select: text;
+            -webkit-user-select: text;
+        }
+
+        .learn-tip {
+            margin-top: 10px;
+            padding: 10px 12px;
+            border-left: 3px solid var(--accent-green);
+            background: rgba(0, 230, 118, .07);
+            color: #d9fbe8;
+            border-radius: 5px;
+            font-size: 13px;
+            line-height: 1.55;
+        }
+
+        .shake {
+            animation: shakeScreen 0.3s cubic-bezier(.36, .07, .19, .97) both;
+        }
+
+        @keyframes shakeScreen {
+
+            10%,
+            90% {
+                transform: translate3d(-2px, 0, 0);
+            }
+
+            20%,
+            80% {
+                transform: translate3d(3px, 0, 0);
+            }
+
+            30%,
+            50%,
+            70% {
+                transform: translate3d(-4px, 0, 0);
+            }
+
+            40%,
+            60% {
+                transform: translate3d(4px, 0, 0);
+            }
+        }
+
+        @media (max-width: 850px) {
+            .learn-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 560px) {
+            .learn-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="duel-app">
+        <!-- Top Header Bar -->
+        <header>
+            <div class="brand-title" id="homeBrandBtn" title="Về sảnh chính">
+                <span>⚔️ CODEDUEL</span>
+                <span class="brand-badge">PYTHON vs C++</span>
+            </div>
+            <div class="header-actions">
+                <span id="playerScoreTag" style="font-size: 13px; font-weight: 700; color: var(--accent-gold);">🏆 ĐIỂM:
+                    0</span>
+                <button id="goHomeBtn" class="btn-icon" title="Ngôi nhà - Trở về sảnh chính">🏠</button>
+                <button id="pauseGameBtn" class="btn-icon" title="Tạm dừng trận đấu">⏸️</button>
+                <button id="openLearnBtn" class="btn-icon" title="Khu học tập code">📚</button>
+                <button id="soundToggleBtn" class="btn-icon" title="Bật/Tắt âm thanh">🔊</button>
+            </div>
+        </header>
+
+        <!-- Combatants Health & Avatar Bar -->
+        <div class="battle-header">
+            <!-- Player / Bot 1 -->
+            <div class="combatant-card" id="combatant1Card">
+                <div class="avatar-frame" id="p1Avatar">🧑‍💻</div>
+                <div class="combatant-meta">
+                    <div class="combatant-name">
+                        <span id="p1Name">Coder</span>
+                        <span id="playerShieldTag" style="display:none; color:var(--accent-cyan); font-size:12px;">🛡️
+                            SHIELD</span>
+                        <span id="playerBoostTag" style="display:none; color:var(--accent-gold); font-size:12px;">⚡
+                            BOOST</span>
+                    </div>
+                    <div class="hp-bar-outer">
+                        <div id="p1HpBar" class="hp-bar-fill" style="width: 100%;"></div>
+                    </div>
+                    <div class="hp-text"><span id="p1HpVal">100</span> / 100 HP</div>
+                </div>
+            </div>
+
+            <!-- VS Badge -->
+            <div class="vs-emblem">VS</div>
+
+            <!-- AI Bot / Bot 2 -->
+            <div class="combatant-card bot2" id="combatant2Card">
+                <div class="avatar-frame" id="p2Avatar">🤖</div>
+                <div class="combatant-meta">
+                    <div class="combatant-name">
+                        <span id="p2Name">Junior BitBot</span>
+                    </div>
+                    <div class="hp-bar-outer">
+                        <div id="p2HpBar" class="hp-bar-fill" style="width: 100%;"></div>
+                    </div>
+                    <div class="hp-text"><span id="p2HpVal">100</span> / 100 HP</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Question Turn Timer -->
+        <div class="timer-container">
+            <div class="timer-bar-outer">
+                <div id="turnTimerBar" class="timer-bar-fill"></div>
+            </div>
+        </div>
+
+        <!-- Main Question Arena -->
+        <div class="arena-body">
+            <div class="question-badge-row">
+                <span id="questionCategory" class="category-tag">🐍 Python • Quản lý bộ nhớ</span>
+                <span id="comboBadge" class="combo-tag" style="display: none;">COMBO x2! (+20% Dmg)</span>
+            </div>
+
+            <div id="questionPrompt" class="question-prompt">
+                Đoạn code sau đây sẽ in ra kết quả gì trên màn hình?
+            </div>
+
+            <!-- Formatted Code Snippet -->
+            <div id="codeBox" class="code-box"></div>
+
+            <!-- 4 Multiple Choice Options -->
+            <div class="choices-grid">
+                <button class="choice-btn" data-index="0">
+                    <span class="choice-key">1</span>
+                    <span class="choice-text">Option A</span>
+                </button>
+                <button class="choice-btn" data-index="1">
+                    <span class="choice-key">2</span>
+                    <span class="choice-text">Option B</span>
+                </button>
+                <button class="choice-btn" data-index="2">
+                    <span class="choice-key">3</span>
+                    <span class="choice-text">Option C</span>
+                </button>
+                <button class="choice-btn" data-index="3">
+                    <span class="choice-key">4</span>
+                    <span class="choice-text">Option D</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Tactical Skill Bar -->
+        <div class="skills-bar" id="skillsBar">
+            <div class="skills-label">
+                <span>⚡ KỸ NĂNG ĐẤU SĨ:</span>
+            </div>
+            <div class="skills-buttons">
+                <button id="skillShield" class="skill-btn">🛡️ Khiên Bug (1/1)</button>
+                <button id="skillBoost" class="skill-btn">⚡ X2 Sát thương (1/1)</button>
+                <button id="skill5050" class="skill-btn">🔍 Loại 50/50 (1/1)</button>
+                <button id="skillFreeze" class="skill-btn">⏱️️ Đóng băng giờ (1/1)</button>
+            </div>
+        </div>
+
+        <!-- Explanation Modal Popup -->
+        <div id="explanationOverlay" class="explanation-overlay hidden">
+            <div class="explanation-card">
+                <div id="resultBadge" class="result-badge win">
+                    <span>⚔️ CHÍNH XÁC! BẠN GÂY 35 SÁT THƯƠNG</span>
+                </div>
+                <div class="explanation-title">
+                    <span>📚 BÀI HỌC KỸ THUẬT CHUYÊN SÂU:</span>
+                </div>
+                <div id="explanationContent" class="explanation-text">
+                    Nội dung phân tích code chi tiết...
+                </div>
+                <button id="nextTurnBtn" class="btn-next">LƯỢT KẾ TIẾP (SPACE) ➔</button>
+            </div>
+        </div>
+
+        <!-- Pause Menu Modal -->
+        <div id="pauseModal" class="pause-modal hidden">
+            <div class="pause-title">⏸️ TRẬN ĐẤU TẠM DỪNG</div>
+            <button id="resumeBtn" class="btn-pause-action">▶️ Tiếp Tục Trận Đấu</button>
+            <button id="restartPauseBtn" class="btn-pause-action">🔄 Đấu Lại Trận Này</button>
+            <button id="homePauseBtn" class="btn-pause-action"
+                style="border-color: var(--accent-magenta); color: #ff7b72;">🏠 Trở Về Màn Hình Chính</button>
+        </div>
+
+        <!-- Game Setup / Start Screen -->
+        <div id="startScreen" class="screen-overlay">
+            <h1 class="screen-title">CODEDUEL ARENA</h1>
+            <p class="screen-desc">
+                Rèn luyện tư duy <b>Python</b> & <b>C++</b> qua các trận quyết đấu logic! Lựa chọn đấu trực tiếp hoặc
+                quan sát trận đấu giữa các AI Bot.
+            </p>
+
+            <!-- Game Mode Choice -->
+            <div
+                style="font-size: 13px; font-weight: 800; color: var(--accent-gold); margin-bottom: 10px; text-transform: uppercase;">
+                1. CHỌN CHẾ ĐỘ THI ĐẤU
+            </div>
+            <div class="config-group" id="modeSelection">
+                <div class="config-card selected" data-mode="pve">
+                    <div class="config-card-icon">🧑‍💻 VS 🤖</div>
+                    <div class="config-card-title">Người đấu với Máy</div>
+                    <div class="config-card-sub">Trực tiếp giải code chọn đáp án</div>
+                </div>
+                <div class="config-card" data-mode="botvbot">
+                    <div class="config-card-icon">🤖 VS 👾</div>
+                    <div class="config-card-title">Máy đấu với Máy</div>
+                    <div class="config-card-sub">Mô phỏng 2 AI tự so tài</div>
+                </div>
+            </div>
+
+            <!-- Topic Choice -->
+            <div
+                style="font-size: 13px; font-weight: 800; color: var(--accent-cyan); margin-bottom: 10px; text-transform: uppercase;">
+                2. CHỌN CHỦ ĐỀ CODE
+            </div>
+            <div class="config-group" id="topicSelection">
+                <div class="config-card selected" data-topic="all">
+                    <div class="config-card-icon">⚔️</div>
+                    <div class="config-card-title">Hỗn Hợp Cả Hai</div>
+                    <div class="config-card-sub">Python vs C++ So Sánh</div>
+                </div>
+                <div class="config-card" data-topic="python">
+                    <div class="config-card-icon">🐍</div>
+                    <div class="config-card-title">Chuyên Sâu Python</div>
+                    <div class="config-card-sub">Dunder, GIL, Mutability</div>
+                </div>
+                <div class="config-card" data-topic="cpp">
+                    <div class="config-card-icon">⚡</div>
+                    <div class="config-card-title">Chuyên Sâu C++</div>
+                    <div class="config-card-sub">Con trỏ, STL, Memory</div>
+                </div>
+            </div>
+
+            <!-- Difficulty / Bot Choice -->
+            <div
+                style="font-size: 13px; font-weight: 800; color: var(--accent-magenta); margin-bottom: 10px; text-transform: uppercase;">
+                3. CHỌN ĐỐI THỦ AI BOT
+            </div>
+            <div class="config-group" id="botSelection">
+                <div class="config-card selected" data-bot="junior">
+                    <div class="config-card-icon">🤖</div>
+                    <div class="config-card-title">Junior BitBot</div>
+                    <div class="config-card-sub">Dễ • 16 giây • 100 HP</div>
+                </div>
+                <div class="config-card" data-bot="mid">
+                    <div class="config-card-icon">👾</div>
+                    <div class="config-card-title">CyberLint AI</div>
+                    <div class="config-card-sub">Vừa • 11 giây • 140 HP</div>
+                </div>
+                <div class="config-card" data-bot="senior">
+                    <div class="config-card-icon">💀</div>
+                    <div class="config-card-title">NullPointer Daemon</div>
+                    <div class="config-card-sub">Khó • 7 giây • 180 HP</div>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:10px;">
+                <button id="openLearnFromStartBtn" class="btn-battle"
+                    style="background:linear-gradient(90deg,#0077ff,var(--accent-cyan));">
+                    📚 HỌC PYTHON / C++
+                </button>
+                <button id="startBattleBtn" class="btn-battle">VÀO ĐẤU TRƯỜNG ➔</button>
+            </div>
+        </div>
+
+        <!-- Learning Hub Modal -->
+        <div id="learningOverlay" class="learn-overlay hidden">
+            <div class="learn-header">
+                <div>
+                    <div class="learn-title">📚 CODEDUEL LEARNING HUB</div>
+                    <div class="learn-subtitle">Kho kiến thức & cú pháp thực tế đầy đủ nhất của Python và C++.</div>
+                </div>
+                <button id="closeLearnBtn" class="learn-close">✕ Đóng</button>
+            </div>
+
+            <div class="learn-tabs" id="learnLanguageTabs">
+                <button class="learn-tab active" data-learn-lang="python">🐍 Python</button>
+                <button class="learn-tab" data-learn-lang="cpp">⚡ C++</button>
+                <button class="learn-tab" data-learn-lang="compare">⚔️️ So sánh Python vs C++</button>
+            </div>
+
+            <div class="learn-levels" id="learnLevelTabs">
+                <button class="learn-level active" data-learn-level="beginner">🟢 Cơ bản (Beginner)</button>
+                <button class="learn-level" data-learn-level="intermediate">🟡 Trung bình (Intermediate)</button>
+                <button class="learn-level" data-learn-level="advanced">🔴 Nâng cao (Advanced)</button>
+            </div>
+
+            <div id="learnGrid" class="learn-grid"></div>
+            <div id="learnDetail" class="learn-detail"></div>
+        </div>
+
+        <!-- Match Result Screen -->
+        <div id="gameOverScreen" class="screen-overlay hidden">
+            <h1 id="endGameTitle" class="screen-title" style="color: var(--accent-green);">CHIẾN THẮNG TUYỆT ĐỐI!</h1>
+            <p id="endGameDesc" class="screen-desc">Bạn đã đánh bại Máy và chứng minh kiến thức lập trình xuất sắc.</p>
+
+            <div
+                style="background: rgba(255,255,255,0.05); padding: 18px 30px; border-radius: 12px; margin-bottom: 24px; border: 1px solid var(--border-color); display: flex; gap: 30px;">
+                <div>
+                    <div style="font-size: 12px; color: var(--text-muted);">SỐ CÂU ĐÚNG</div>
+                    <div id="statCorrect" style="font-size: 24px; font-weight: 900; color: var(--accent-cyan);">0 / 0
+                    </div>
+                </div>
+                <div>
+                    <div style="font-size: 12px; color: var(--text-muted);">TỔNG ĐIỂM SỐ</div>
+                    <div id="statScore" style="font-size: 24px; font-weight: 900; color: var(--accent-gold);">0</div>
+                </div>
+                <div>
+                    <div style="font-size: 12px; color: var(--text-muted);">COMBO CAO NHẤT</div>
+                    <div id="statCombo" style="font-size: 24px; font-weight: 900; color: var(--accent-magenta);">x1
+                    </div>
+                </div>
+            </div>
+
+            <button id="restartBattleBtn" class="btn-battle">ĐẤU TRẬN MỚI</button>
+        </div>
+    </div>
+
+    <script>
+        /* --------------------------------------------------------------------------
+           1. SYNTHESIZED SOUND ENGINE (Web Audio API)
+           -------------------------------------------------------------------------- */
+        class AudioEngine {
+            constructor() { this.ctx = null; this.muted = false; }
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                }
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+            }
+            toggleMute() { this.muted = !this.muted; return this.muted; }
+            playCorrect() {
+                if (this.muted || !this.ctx) return;
+                const now = this.ctx.currentTime;
+                [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, now + idx * 0.06);
+                    gain.gain.setValueAtTime(0.18, now + idx * 0.06);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.06 + 0.16);
+                    osc.connect(gain); gain.connect(this.ctx.destination);
+                    osc.start(now + idx * 0.06); osc.stop(now + idx * 0.06 + 0.18);
+                });
+            }
+            playHit() {
+                if (this.muted || !this.ctx) return;
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(320, now);
+                osc.frequency.exponentialRampToValueAtTime(80, now + 0.2);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+                osc.connect(gain); gain.connect(this.ctx.destination);
+                osc.start(now); osc.stop(now + 0.22);
+            }
+            playSkill() {
+                if (this.muted || !this.ctx) return;
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.linearRampToValueAtTime(850, now + 0.18);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+                osc.connect(gain); gain.connect(this.ctx.destination);
+                osc.start(now); osc.stop(now + 0.2);
+            }
+            playVictory() {
+                if (this.muted || !this.ctx) return;
+                const notes = [440, 554.37, 659.25, 880, 1108.73];
+                notes.forEach((freq, idx) => {
+                    const now = this.ctx.currentTime + idx * 0.09;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, now);
+                    gain.gain.setValueAtTime(0.25, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+                    osc.connect(gain); gain.connect(this.ctx.destination);
+                    osc.start(now); osc.stop(now + 0.3);
+                });
+            }
+            playDefeat() {
+                if (this.muted || !this.ctx) return;
+                const notes = [320, 280, 240, 180];
+                notes.forEach((freq, idx) => {
+                    const now = this.ctx.currentTime + idx * 0.15;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(freq, now);
+                    gain.gain.setValueAtTime(0.25, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+                    osc.connect(gain); gain.connect(this.ctx.destination);
+                    osc.start(now); osc.stop(now + 0.24);
+                });
+            }
+        }
+        const audio = new AudioEngine();
+
+        /* --------------------------------------------------------------------------
+           2. EXPANDED LEARNING BANK (Python, C++, and Comparison)
+           -------------------------------------------------------------------------- */
+        const LEARNING_BANK = {
+            python: [
+                /* Beginner */
+                {
+                    term: 'Biến & Kiểu dữ liệu', meaning: 'Variables & Data Types', level: 'beginner',
+                    what: 'Tên gọi lưu trữ các loại thông tin khác nhau trong bộ nhớ.',
+                    use: 'Dùng để quản lý dữ liệu linh hoạt mà không cần khai báo kiểu trước.',
+                    example: 'age = 20          # int\nprice = 99.9       # float\nname = "Python"    # str\nis_active = True   # bool',
+                    tip: 'Python tự nhận diện kiểu dữ liệu (Dynamic Typing).'
+                },
+                {
+                    term: 'List & Tuple', meaning: 'Mảng động & Chuỗi hằng', level: 'beginner',
+                    what: 'List là danh sách thay đổi được (Mutable), Tuple là danh sách cố định (Immutable).',
+                    use: 'List dùng khi cần thêm/xóa phần tử; Tuple dùng lưu hằng số bảo mật.',
+                    example: 'my_list = [1, 2, 3]\nmy_list.append(4)\n\nmy_tuple = (1, 2, 3)\n# my_tuple[0] = 9 -> Lỗi!',
+                    tip: 'Tuple dùng ngoặc tròn (), List dùng ngoặc vuông [].'
+                },
+                {
+                    term: 'Dictionary (dict)', meaning: 'Tập hợp Key-Value', level: 'beginner',
+                    what: 'Cấu trúc lưu dữ liệu theo cặp Khóa (Key) - Giá trị (Value).',
+                    use: 'Tra cứu dữ liệu siêu nhanh theo tên/khóa thay vì chỉ số số học.',
+                    example: 'user = {"name": "Alice", "score": 95}\nprint(user["name"])  # Alice\nuser["role"] = "Admin"',
+                    tip: 'Từ Python 3.7+, dict duy trì đúng thứ tự chèn phần tử.'
+                },
+
+                /* Intermediate */
+                {
+                    term: 'List Comprehension', meaning: 'Khởi tạo List ngắn gọn', level: 'intermediate',
+                    what: 'Cú pháp tạo danh sách mới từ iterable chỉ với 1 dòng code.',
+                    use: 'Thay thế vòng lặp for dài dòng khi lọc hoặc biến đổi dữ liệu.',
+                    example: 'numbers = [1, 2, 3, 4, 5, 6]\nevens = [x for x in numbers if x % 2 == 0]\nsquares = [x**2 for x in numbers]\n# [4, 16, 36]',
+                    tip: 'Code ngắn nhưng đừng viết quá phức tạp gây khó đọc.'
+                },
+                {
+                    term: 'Args & Kwargs', meaning: 'Tham số biến đổi *args, **kwargs', level: 'intermediate',
+                    what: 'Cho phép hàm nhận số lượng tham số không giới hạn.',
+                    use: 'Tạo hàm linh hoạt tiếp nhận cả danh sách tham số vô hướng và cặp key-value.',
+                    example: 'def total(*args, **kwargs):\n    s = sum(args)\n    print("Bonus:", kwargs.get("bonus", 0))\n    return s\n\nprint(total(10, 20, 30, bonus=5)) # 60',
+                    tip: '*args nhận tuple, **kwargs nhận dictionary.'
+                },
+                {
+                    term: 'Lambda & Filter/Map', meaning: 'Hàm vô danh (Anonymous)', level: 'intermediate',
+                    what: 'Hàm nhỏ ngắn gọn không cần đặt tên bằng từ khóa def.',
+                    use: 'Dùng kết hợp với map(), filter() hoặc sắp xếp sort(key=...).',
+                    example: 'nums = [1, 2, 3, 4]\ndoubled = list(map(lambda x: x * 2, nums))\npoints = [(1, 5), (3, 2)]\npoints.sort(key=lambda p: p[1])',
+                    tip: 'Chỉ nên dùng lambda cho phép toán đơn giản trên 1 dòng.'
+                },
+
+                /* Advanced */
+                {
+                    term: 'Decorators (@)', meaning: 'Hàm bọc (Wrapper)', level: 'advanced',
+                    what: 'Hàm nhận vào một hàm khác và mở rộng tính năng của nó mà không sửa code cũ.',
+                    use: 'Đo thời gian chạy code, kiểm tra quyền đăng nhập, ghi log.',
+                    example: 'def my_logger(func):\n    def wrapper(*args):\n        print("Đang chạy:", func.__name__)\n        return func(*args)\n    return wrapper\n\n@my_logger\ndef say_hi(): print("Xin chào!")',
+                    tip: 'Decorator hoạt động theo nguyên lý Closure trong Python.'
+                },
+                {
+                    term: 'Generators & Yield', meaning: 'Sinh dữ liệu tiết kiệm RAM', level: 'advanced',
+                    what: 'Hàm chứa từ khóa yield giúp tạo dòng dữ liệu chạy theo cơ chế Lazy Evaluation.',
+                    use: 'Xử lý tệp dữ liệu khổng lồ hàng GB mà không làm tràn bộ nhớ RAM.',
+                    example: 'def big_stream():\n    for i in range(1000000):\n        yield i * 2\n\ngen = big_stream()\nprint(next(gen)) # 0\nprint(next(gen)) # 2',
+                    tip: 'Generator chỉ tính toán phần tử tiếp theo khi được gọi next().'
+                },
+                {
+                    term: 'Context Manager (with)', meaning: 'Quản lý tài nguyên tự động', level: 'advanced',
+                    what: 'Cấu trúc tự động mở và dọn dẹp giải phóng tài nguyên sau khi xong việc.',
+                    use: 'Mở file, kết nối Database, khóa luồng Thread safety.',
+                    example: 'with open("data.txt", "w") as f:\n    f.write("Hello World")\n# File tự động closed an toàn kể cả khi có lỗi xảy ra!',
+                    tip: 'Tự viết class Context Manager bằng hàm __enter__ và __exit__.'
+                }
+            ],
+
+            cpp: [
+                /* Beginner */
+                {
+                    term: 'Con trỏ (Pointers)', meaning: 'Địa chỉ ô nhớ (*ptr)', level: 'beginner',
+                    what: 'Biến lưu trữ địa chỉ bộ nhớ RAM của biến khác.',
+                    use: 'Thao tác trực tiếp với RAM, truyền dữ liệu hiệu quả không cần copy.',
+                    example: 'int val = 100;\nint* ptr = &val;  // ptr chứa địa chỉ của val\n*ptr = 200;       // Đổi val thành 200 qua con trỏ',
+                    tip: '& là lấy địa chỉ, * là lấy giá trị tại địa chỉ đó.'
+                },
+                {
+                    term: 'Tham chiếu (References)', meaning: 'Bí danh ô nhớ (&ref)', level: 'beginner',
+                    what: 'Tên gọi khác (Alias) gắn chặt vào một biến sẵn có.',
+                    use: 'Truyền biến vào hàm để sửa trực tiếp giá trị biến gốc.',
+                    example: 'void doubleIt(int &num) {\n    num *= 2;\n}\nint x = 10;\ndoubleIt(x); // x trở thành 20',
+                    tip: 'Tham chiếu bắt đầu phải gán ngay và không thể trỏ sang biến khác.'
+                },
+                {
+                    term: 'std::vector', meaning: 'Mảng động STL', level: 'beginner',
+                    what: 'Container lưu trữ danh sách phần tử liên tiếp có thể co giãn kích thước.',
+                    use: 'Thay thế mảng tĩnh truyền thống C-style array.',
+                    example: 'std::vector<int> nums = {10, 20};\nnums.push_back(30);\nfor(int x : nums) std::cout << x << " ";',
+                    tip: 'Phần tử nằm liên tục trong bộ nhớ RAM nên truy xuất O(1) cực nhanh.'
+                },
+
+                /* Intermediate */
+                {
+                    term: 'Struct & Class', meaning: 'Lập trình hướng đối tượng', level: 'intermediate',
+                    what: 'Kiểu dữ liệu tự định nghĩa gom các thuộc tính và phương thức xử lý.',
+                    use: 'Mô hình hóa các thực thể thực tế như Player, Item, Student.',
+                    example: 'class Player {\nprivate:\n    int hp = 100;\npublic:\n    void takeDamage(int dmg) { hp -= dmg; }\n};',
+                    tip: 'Struct mặc định các thành viên là public; Class mặc định là private.'
+                },
+                {
+                    term: 'STL Map & Unordered Map', meaning: 'Bảng băm & Cây cân bằng', level: 'intermediate',
+                    what: 'std::map dùng Cây Đỏ-Đen O(log N); std::unordered_map dùng Bảng Băm O(1).',
+                    use: 'Lưu trữ và tra cứu theo cặp Key - Value.',
+                    example: 'std::unordered_map<std::string, int> scores;\nscores["Alice"] = 95;\nif(scores.find("Alice") != scores.end())\n    std::cout << scores["Alice"];',
+                    tip: 'Dùng unordered_map khi cần tốc độ tối đa và không cần sắp xếp khóa.'
+                },
+                {
+                    term: 'Con trỏ thông minh (Smart Pointers)', meaning: 'RAII - Tự giải phóng RAM', level: 'intermediate',
+                    what: 'Class bọc con trỏ tự gọi delete khi ra khỏi phạm vi bộ nhớ.',
+                    use: 'Ngăn chặn triệt để lỗi rò rỉ bộ nhớ (Memory Leak).',
+                    example: 'std::unique_ptr<int> p1 = std::make_unique<int>(50);\n// Không cần gọi delete p1! Tự hủy khi hết scope.',
+                    tip: 'Dùng unique_ptr cho quyền sở hữu đơn; shared_ptr cho sở hữu chia sẻ.'
+                },
+
+                /* Advanced */
+                {
+                    term: 'Move Semantics & R-value (&&)', meaning: 'Chuyển giao quyền sở hữu', level: 'advanced',
+                    what: 'Cơ chế "đánh cắp" dữ liệu của đối tượng tạm thời thay vì copy tốn kém.',
+                    use: 'Tăng tốc độ tối đa cho các hàm trả về đối tượng lớn.',
+                    example: 'std::string a = "Dữ liệu cực lớn...";\nstd::string b = std::move(a);\n// a bị rỗng, b tiếp quản bộ nhớ của a mà không tốn công copy!',
+                    tip: 'Sử dụng toán tử tham chiếu && và hàm std::move().'
+                },
+                {
+                    term: 'Templates & Metaprogramming', meaning: 'Lập trình tổng quát', level: 'advanced',
+                    what: 'Viết hàm hoặc class hoạt động với bất kỳ kiểu dữ liệu nào.',
+                    use: 'Tạo thư viện tái sử dụng cao như vector, sort, stack.',
+                    example: 'template <typename T>\nT getMax(T a, T b) {\n    return (a > b) ? a : b;\n}\nstd::cout << getMax<double>(3.5, 2.1);',
+                    tip: 'Trình biên dịch sinh ra mã máy riêng cho từng kiểu dữ liệu lúc compile.'
+                },
+                {
+                    term: 'Virtual Functions & VTable', meaning: 'Đa hình động (Polymorphism)', level: 'advanced',
+                    what: 'Cơ chế cho phép lớp con ghi đè (override) phương thức lớp cha.',
+                    use: 'Gọi đúng hàm của đối tượng thực sự thông qua con trỏ lớp cha.',
+                    example: 'class Animal { public: virtual void speak() = 0; };\nclass Dog : public Animal { public: void speak() override { std::cout << "Gâu!"; } };',
+                    tip: 'Luôn khai báo Virtual Destructor cho Base Class khi dùng đa hình.'
+                }
+            ],
+
+            compare: [
+                {
+                    term: 'Quản lý bộ nhớ (Memory Management)', meaning: 'Garbage Collection vs RAII', level: 'beginner',
+                    what: 'Python thu gom rác tự động bằng Ref Counting + GC. C++ quản lý trực tiếp bằng RAII & Smart Pointers.',
+                    use: 'C++ cho tốc độ tối ưu và kiểm soát tuyệt đối RAM; Python giúp viết code nhanh đỡ lo nghĩ về delete.',
+                    example: '// C++:\nauto p = std::make_unique<Data>();\n\n# Python:\nobj = Data() # Tự thu gom rác',
+                    tip: 'C++ không có độ trễ do GC ngắt nhịp (Stop-the-world).'
+                },
+                {
+                    term: 'Cấu trúc danh sách (List vs Vector)', meaning: 'Mảng con trỏ vs Mảng phẳng', level: 'intermediate',
+                    what: 'Python list lưu mảng chứa các con trỏ trỏ đến PyObject. C++ vector<int> lưu mảng các số nguyên nằm liền kề nhau.',
+                    use: 'Python list chứa được nhiều kiểu dữ liệu cùng lúc; C++ vector đồng nhất kiểu nhưng tối ưu CPU Cache.',
+                    example: 'Python:  [1, "text", 3.14]  (Trỏ gián tiếp)\nC++:     vector<int>{1, 2, 3} (Liền kề RAM)',
+                    tip: 'C++ vector truy xuất bộ nhớ nhanh hơn nhiều nhờ Cache Locality.'
+                },
+                {
+                    term: 'Tốc độ & Thực thi', meaning: 'Biên dịch AOT vs Máy ảo PVM', level: 'advanced',
+                    what: 'C++ biên dịch thẳng ra mã máy nhị phân. Python dịch ra Bytecode và chạy trên máy ảo PVM.',
+                    use: 'C++ nhanh hơn từ 10x đến 100x trong các bài toán lặp tính toán nặng.',
+                    example: 'C++:    Compiler -> Machine Code (Binary)\nPython: Source -> Bytecode (.pyc) -> PVM Interpreter',
+                    tip: 'Có thể viết module C++ rồi gọi từ Python để tối ưu tốc độ (Ctypes/Cython).'
+                }
+            ]
+        };
+
+        /* --------------------------------------------------------------------------
+           3. QUESTION BANK
+           -------------------------------------------------------------------------- */
+        const QUESTION_BANK = [
+            {
+                id: 'py1', topic: 'python', category: '🐍 Python • Tham chiếu & Mutability',
+                prompt: 'Đoạn mã Python sau in ra giá trị gì?',
+                code: `<span class="kw">def</span> <span class="fn">append_val</span>(val, my_list=[]):\n    my_list.append(val)\n    <span class="kw">return</span> my_list\n\n<span class="fn">print</span>(append_val(<span class="nb">1</span>))\n<span class="fn">print</span>(append_val(<span class="nb">2</span>))`,
+                choices: ['[1] và [2]', '[1] và [1, 2]', '[1, 2] và [1, 2]', 'Lỗi cú pháp TypeError'],
+                correct: 1,
+                explanation: 'Trong Python, giá trị mặc định của tham số hàm (default argument) chỉ khởi tạo <b>MỘT LẦN DUY NHẤT</b> khi định nghĩa hàm. Vì list là mutable, lần gọi 2 sẽ tiếp tục thêm vào danh sách cũ.'
+            },
+            {
+                id: 'cpp1', topic: 'cpp', category: '⚡ C++ • Con Trỏ & Tham Chiếu',
+                prompt: 'Đoạn code C++ sau xuất ra kết quả nào?',
+                code: `<span class="tp">int</span> a = <span class="nb">10</span>;\n<span class="tp">int</span><span class="pt">*</span> ptr = <span class="pt">&</span>a;\n<span class="tp">int</span><span class="pt">&</span> ref = a;\n\n<span class="pt">*</span>ptr = <span class="nb">25</span>;\nref = <span class="nb">40</span>;\nstd::cout &lt;&lt; a &lt;&lt; <span class="st">" "</span> &lt;&lt; <span class="pt">*</span>ptr;`,
+                choices: ['10 25', '25 40', '40 40', 'Lỗi biên dịch'],
+                correct: 2,
+                explanation: '<code>ptr</code> trỏ đến <code>a</code> và <code>ref</code> là bí danh của <code>a</code>. Đổi <code>ref = 40</code> trực tiếp thay đổi giá trị của <code>a</code> thành 40.'
+            },
+            {
+                id: 'dual1', topic: 'all', category: '⚔️️ Đối Kháng • Quản Lý Bộ Nhớ',
+                prompt: 'Sự khác biệt cốt lõi về quản lý bộ nhớ giữa C++ và Python:',
+                code: `<span class="cm">// C++</span>: <span class="tp">auto</span> p = std::<span class="fn">make_unique</span>&lt;<span class="tp">Data</span>&gt;();\n<span class="cm"># Python</span>: obj = Data()`,
+                choices: [
+                    'C++ dùng Garbage Collector, Python dùng delete thủ công',
+                    'C++ quản lý trực tiếp / RAII; Python tự động qua Reference Counting & GC',
+                    'Cả hai bắt buộc tự giải phóng thủ công',
+                    'Python không dùng bộ nhớ Heap'
+                ],
+                correct: 1,
+                explanation: 'C++ cho phép kiểm soát RAM tuyệt đối với Smart Pointers/RAII. Python quản lý tự động qua bộ đếm tham chiếu (Reference Counting) và Garbage Collector.'
+            }
+        ];
+
+        const AI_BOTS = {
+            junior: { name: 'Junior BitBot', avatar: '🤖', maxHp: 100, timerSec: 16, baseDmg: 20, accuracy: 0.65 },
+            mid: { name: 'CyberLint AI', avatar: '👾', maxHp: 140, timerSec: 11, baseDmg: 28, accuracy: 0.82 },
+            senior: { name: 'NullPointer Daemon', avatar: '💀', maxHp: 180, timerSec: 7, baseDmg: 35, accuracy: 0.94 }
+        };
+
+        /* --------------------------------------------------------------------------
+           4. MAIN GAME CONTROLLER
+           -------------------------------------------------------------------------- */
+        class CodeDuelGame {
+            constructor() {
+                this.gameMode = 'pve'; // 'pve' or 'botvbot'
+                this.selectedTopic = 'all';
+                this.selectedBotKey = 'junior';
+
+                this.p1Hp = 100; this.p1MaxHp = 100;
+                this.p2Hp = 100; this.p2MaxHp = 100;
+
+                this.score = 0; this.combo = 0; this.maxCombo = 0;
+                this.totalCorrect = 0; this.totalQuestions = 0;
+
+                this.skills = { shield: true, boost: true, fiftyFifty: true, freeze: true };
+                this.activeShield = false; this.activeBoost = false;
+
+                this.currentQuestions = [];
+                this.currentIndex = 0;
+                this.currentQ = null;
+
+                this.timer = null;
+                this.timeLeft = 0;
+                this.maxTime = 15;
+                this.isWaitingNext = false;
+                this.isPaused = false;
+
+                this.initDOM();
+                this.bindEvents();
+            }
+
+            initDOM() {
+                this.appEl = document.getElementById('duel-app');
+                this.p1HpBar = document.getElementById('p1HpBar');
+                this.p1HpVal = document.getElementById('p1HpVal');
+                this.p1Name = document.getElementById('p1Name');
+                this.p1Avatar = document.getElementById('p1Avatar');
+
+                this.p2HpBar = document.getElementById('p2HpBar');
+                this.p2HpVal = document.getElementById('p2HpVal');
+                this.p2Name = document.getElementById('p2Name');
+                this.p2Avatar = document.getElementById('p2Avatar');
+
+                this.turnTimerBar = document.getElementById('turnTimerBar');
+                this.questionCategory = document.getElementById('questionCategory');
+                this.questionPrompt = document.getElementById('questionPrompt');
+                this.codeBox = document.getElementById('codeBox');
+                this.choiceBtns = document.querySelectorAll('.choice-btn');
+                this.comboBadge = document.getElementById('comboBadge');
+                this.playerScoreTag = document.getElementById('playerScoreTag');
+
+                this.playerShieldTag = document.getElementById('playerShieldTag');
+                this.playerBoostTag = document.getElementById('playerBoostTag');
+
+                // Screens & Modals
+                this.startScreen = document.getElementById('startScreen');
+                this.explanationOverlay = document.getElementById('explanationOverlay');
+                this.resultBadge = document.getElementById('resultBadge');
+                this.explanationContent = document.getElementById('explanationContent');
+                this.gameOverScreen = document.getElementById('gameOverScreen');
+                this.pauseModal = document.getElementById('pauseModal');
+
+                // Skills
+                this.skillsBar = document.getElementById('skillsBar');
+                this.skillShieldBtn = document.getElementById('skillShield');
+                this.skillBoostBtn = document.getElementById('skillBoost');
+                this.skill5050Btn = document.getElementById('skill5050');
+                this.skillFreezeBtn = document.getElementById('skillFreeze');
+
+                // Learning Hub
+                this.learningOverlay = document.getElementById('learningOverlay');
+                this.learnGrid = document.getElementById('learnGrid');
+                this.learnDetail = document.getElementById('learnDetail');
+                this.learnLanguage = 'python';
+                this.learnLevel = 'beginner';
+            }
+
+            bindEvents() {
+                // Selection cards
+                document.querySelectorAll('#modeSelection .config-card').forEach(card => {
+                    card.addEventListener('click', () => {
+                        document.querySelectorAll('#modeSelection .config-card').forEach(c => c.classList.remove('selected'));
+                        card.classList.add('selected');
+                        this.gameMode = card.dataset.mode;
+                    });
+                });
+
+                document.querySelectorAll('#topicSelection .config-card').forEach(card => {
+                    card.addEventListener('click', () => {
+                        document.querySelectorAll('#topicSelection .config-card').forEach(c => c.classList.remove('selected'));
+                        card.classList.add('selected');
+                        this.selectedTopic = card.dataset.topic;
+                    });
+                });
+
+                document.querySelectorAll('#botSelection .config-card').forEach(card => {
+                    card.addEventListener('click', () => {
+                        document.querySelectorAll('#botSelection .config-card').forEach(c => c.classList.remove('selected'));
+                        card.classList.add('selected');
+                        this.selectedBotKey = card.dataset.bot;
+                    });
+                });
+
+                document.getElementById('startBattleBtn').addEventListener('click', () => {
+                    audio.init();
+                    this.startBattle();
+                });
+
+                document.getElementById('openLearnFromStartBtn').addEventListener('click', () => this.openLearning());
+                document.getElementById('restartBattleBtn').addEventListener('click', () => this.showHome());
+
+                // Header Navigation Buttons
+                document.getElementById('homeBrandBtn').addEventListener('click', () => this.showHome());
+                document.getElementById('goHomeBtn').addEventListener('click', () => this.showHome());
+                document.getElementById('pauseGameBtn').addEventListener('click', () => this.pauseGame());
+
+                // Pause Menu Actions
+                document.getElementById('resumeBtn').addEventListener('click', () => this.resumeGame());
+                document.getElementById('restartPauseBtn').addEventListener('click', () => {
+                    this.resumeGame();
+                    this.startBattle();
+                });
+                document.getElementById('homePauseBtn').addEventListener('click', () => {
+                    this.resumeGame();
+                    this.showHome();
+                });
+
+                // Sound Toggle
+                document.getElementById('soundToggleBtn').addEventListener('click', () => {
+                    audio.init();
+                    const isMuted = audio.toggleMute();
+                    document.getElementById('soundToggleBtn').innerText = isMuted ? '🔇' : '🔊';
+                });
+
+                // Learning Hub
+                document.getElementById('openLearnBtn').addEventListener('click', () => this.openLearning());
+                document.getElementById('closeLearnBtn').addEventListener('click', () => this.closeLearning());
+
+                document.querySelectorAll('[data-learn-lang]').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('[data-learn-lang]').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        this.learnLanguage = btn.dataset.learnLang;
+                        this.renderLearning();
+                    });
+                });
+
+                document.querySelectorAll('[data-learn-level]').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('[data-learn-level]').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        this.learnLevel = btn.dataset.learnLevel;
+                        this.renderLearning();
+                    });
+                });
+
+                // Choice Clicks
+                this.choiceBtns.forEach((btn, idx) => {
+                    btn.addEventListener('click', () => {
+                        if (this.gameMode === 'pve') this.handleAnswer(idx);
+                    });
+                });
+
+                // Next Turn
+                document.getElementById('nextTurnBtn').addEventListener('click', () => this.nextTurn());
+
+                // Skills
+                this.skillShieldBtn.addEventListener('click', () => this.useShield());
+                this.skillBoostBtn.addEventListener('click', () => this.useBoost());
+                this.skill5050Btn.addEventListener('click', () => this.use5050());
+                this.skillFreezeBtn.addEventListener('click', () => this.useFreeze());
+            }
+
+            showHome() {
+                clearInterval(this.timer);
+                this.isPaused = false;
+                this.pauseModal.classList.add('hidden');
+                this.learningOverlay.classList.add('hidden');
+                this.gameOverScreen.classList.add('hidden');
+                this.explanationOverlay.classList.add('hidden');
+                this.startScreen.classList.remove('hidden');
+            }
+
+            pauseGame() {
+                if (this.startScreen.classList.contains('hidden') && this.gameOverScreen.classList.contains('hidden')) {
+                    this.isPaused = true;
+                    clearInterval(this.timer);
+                    this.pauseModal.classList.remove('hidden');
+                }
+            }
+
+            resumeGame() {
+                this.isPaused = false;
+                this.pauseModal.classList.add('hidden');
+                if (!this.isWaitingNext) {
+                    this.startTimer();
+                }
+            }
+
+            openLearning() {
+                clearInterval(this.timer);
+                this.learningOverlay.classList.remove('hidden');
+                this.renderLearning();
+            }
+
+            closeLearning() {
+                this.learningOverlay.classList.add('hidden');
+                if (!this.isPaused && this.startScreen.classList.contains('hidden')) {
+                    this.startTimer();
+                }
+            }
+
+            renderLearning() {
+                const items = (LEARNING_BANK[this.learnLanguage] || []).filter(i => i.level === this.learnLevel);
+                this.learnGrid.innerHTML = '';
+
+                if (!items.length) {
+                    this.learnGrid.innerHTML = '<div style="grid-column:1/-1; color:var(--text-muted); text-align:center; padding:20px;">Chưa có chủ đề ở cấp độ này.</div>';
+                    this.learnDetail.classList.remove('show');
+                    return;
+                }
+
+                items.forEach((item, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'learn-card';
+                    card.innerHTML = `
+            <div class="learn-card-term">${item.term}</div>
+            <div class="learn-card-meaning">${item.meaning}</div>
+            <div class="learn-card-short">${item.use}</div>
+          `;
+                    card.addEventListener('click', () => this.showLearningDetail(item));
+                    this.learnGrid.appendChild(card);
+                    if (index === 0) this.showLearningDetail(item);
+                });
+            }
+
+            showLearningDetail(item) {
+                this.learnDetail.innerHTML = `
+          <h3>📖 ${item.term} — ${item.meaning}</h3>
+          <p><b>🔎 Định nghĩa:</b> ${item.what}</p>
+          <p><b>⚙️️ Công dụng thực tế:</b> ${item.use}</p>
+          <div class="learn-code">${item.example}</div>
+          <div class="learn-tip"><b>💡 Mẹo nhỏ:</b> ${item.tip}</div>
+        `;
+                this.learnDetail.classList.add('show');
+            }
+
+            startBattle() {
+                const botConfig = AI_BOTS[this.selectedBotKey];
+
+                if (this.gameMode === 'pve') {
+                    this.p1Name.innerText = 'Coder (Bạn)';
+                    this.p1Avatar.innerText = '🧑‍💻';
+                    this.p1MaxHp = 100; this.p1Hp = 100;
+
+                    this.p2Name.innerText = botConfig.name;
+                    this.p2Avatar.innerText = botConfig.avatar;
+                    this.p2MaxHp = botConfig.maxHp; this.p2Hp = botConfig.maxHp;
+
+                    this.skillsBar.style.display = 'flex';
+                } else {
+                    // Bot vs Bot Mode
+                    this.p1Name.innerText = 'AlphaBot (AI 1)';
+                    this.p1Avatar.innerText = '🤖';
+                    this.p1MaxHp = 120; this.p1Hp = 120;
+
+                    this.p2Name.innerText = 'BetaBot (AI 2)';
+                    this.p2Avatar.innerText = '👾';
+                    this.p2MaxHp = 120; this.p2Hp = 120;
+
+                    this.skillsBar.style.display = 'none'; // Skill bar hidden in auto mode
+                }
+
+                this.score = 0; this.combo = 0; this.maxCombo = 0;
+                this.totalCorrect = 0; this.totalQuestions = 0;
+
+                this.skills = { shield: true, boost: true, fiftyFifty: true, freeze: true };
+                this.activeShield = false; this.activeBoost = false;
+                this.updateSkillUI();
+
+                if (this.selectedTopic === 'all') {
+                    this.currentQuestions = [...QUESTION_BANK];
+                } else {
+                    this.currentQuestions = QUESTION_BANK.filter(q => q.topic === this.selectedTopic || q.topic === 'all');
+                }
+                this.currentQuestions.sort(() => Math.random() - 0.5);
+                this.currentIndex = 0;
+
+                this.startScreen.classList.add('hidden');
+                this.gameOverScreen.classList.add('hidden');
+                this.pauseModal.classList.add('hidden');
+                this.updateUI();
+                this.loadQuestion();
+            }
+
+            loadQuestion() {
+                if (this.currentIndex >= this.currentQuestions.length) {
+                    this.currentQuestions.sort(() => Math.random() - 0.5);
+                    this.currentIndex = 0;
+                }
+
+                this.currentQ = this.currentQuestions[this.currentIndex];
+                this.isWaitingNext = false;
+                this.explanationOverlay.classList.add('hidden');
+
+                this.questionCategory.innerText = this.currentQ.category;
+                this.questionPrompt.innerText = this.currentQ.prompt;
+                this.codeBox.innerHTML = this.currentQ.code;
+
+                this.choiceBtns.forEach((btn, idx) => {
+                    btn.className = 'choice-btn';
+                    btn.disabled = false;
+                    btn.querySelector('.choice-text').innerText = this.currentQ.choices[idx];
+                });
+
+                const botConfig = AI_BOTS[this.selectedBotKey];
+                this.maxTime = (this.gameMode === 'pve') ? botConfig.timerSec : 6;
+                this.timeLeft = this.maxTime;
+                this.turnTimerBar.style.width = '100%';
+
+                this.startTimer();
+
+                // Bot vs Bot automatic choice simulation
+                if (this.gameMode === 'botvbot') {
+                    setTimeout(() => {
+                        if (!this.isWaitingNext && !this.isPaused) {
+                            const accuracy = 0.75;
+                            const isP1Correct = Math.random() < accuracy;
+                            const chosen = isP1Correct ? this.currentQ.correct : (this.currentQ.correct + 1) % 4;
+                            this.handleAnswer(chosen);
+                        }
+                    }, 2500);
+                }
+            }
+
+            startTimer() {
+                clearInterval(this.timer);
+                const startTime = Date.now() - (this.maxTime - this.timeLeft) * 1000;
+                this.timer = setInterval(() => {
+                    const elapsed = (Date.now() - startTime) / 1000;
+                    this.timeLeft = Math.max(0, this.maxTime - elapsed);
+                    const pct = (this.timeLeft / this.maxTime) * 100;
+                    this.turnTimerBar.style.width = `${pct}%`;
+
+                    if (this.timeLeft <= 0) {
+                        clearInterval(this.timer);
+                        this.handleTimeout();
+                    }
+                }, 80);
+            }
+
+            handleAnswer(choiceIndex) {
+                if (this.isWaitingNext || this.isPaused) return;
+                clearInterval(this.timer);
+                this.isWaitingNext = true;
+                this.totalQuestions++;
+
+                const isCorrect = (choiceIndex === this.currentQ.correct);
+
+                this.choiceBtns.forEach((b, idx) => {
+                    b.disabled = true;
+                    if (idx === this.currentQ.correct) b.classList.add('correct');
+                    else if (idx === choiceIndex && !isCorrect) b.classList.add('incorrect');
+                });
+
+                if (isCorrect) {
+                    this.totalCorrect++;
+                    this.combo++;
+                    if (this.combo > this.maxCombo) this.maxCombo = this.combo;
+
+                    let dmg = Math.round(25 * (1 + (this.timeLeft / this.maxTime) * 0.4));
+                    if (this.activeBoost) { dmg *= 2; this.activeBoost = false; }
+
+                    this.p2Hp = Math.max(0, this.p2Hp - dmg);
+                    this.score += dmg * 10;
+                    audio.playCorrect();
+                    this.triggerShake();
+
+                    this.resultBadge.className = 'result-badge win';
+                    this.resultBadge.innerHTML = `<span>⚔️ CHÍNH XÁC! TẤN CÔNG GÂY ${dmg} SÁT THƯƠNG</span>`;
+                } else {
+                    this.combo = 0;
+                    let dmg = 25;
+                    if (this.activeShield) {
+                        dmg = 0; this.activeShield = false;
+                        this.resultBadge.className = 'result-badge win';
+                        this.resultBadge.innerHTML = `<span>🛡️ KHIÊN ĐÃ CHẶN SÁT THƯƠNG!</span>`;
+                    } else {
+                        this.p1Hp = Math.max(0, this.p1Hp - dmg);
+                        audio.playHit();
+                        this.triggerShake();
+                        this.resultBadge.className = 'result-badge lose';
+                        this.resultBadge.innerHTML = `<span>💥 CHỌN SAI! BỊ PHẢN CÔNG -${dmg} HP</span>`;
+                    }
+                }
+
+                this.updateUI();
+                this.showExplanation();
+            }
+
+            handleTimeout() {
+                if (this.isWaitingNext || this.isPaused) return;
+                this.isWaitingNext = true;
+                this.totalQuestions++;
+                this.combo = 0;
+
+                let dmg = 20;
+                this.p1Hp = Math.max(0, this.p1Hp - dmg);
+                audio.playHit();
+                this.triggerShake();
+
+                this.resultBadge.className = 'result-badge lose';
+                this.resultBadge.innerHTML = `<span>⏳ HẾT GIỜ! BỊ PHẢN CÔNG -${dmg} HP</span>`;
+
+                this.choiceBtns.forEach((b, idx) => {
+                    b.disabled = true;
+                    if (idx === this.currentQ.correct) b.classList.add('correct');
+                });
+
+                this.updateUI();
+                this.showExplanation();
+            }
+
+            showExplanation() {
+                this.explanationContent.innerHTML = this.currentQ.explanation;
+                setTimeout(() => {
+                    this.explanationOverlay.classList.remove('hidden');
+                }, 500);
+            }
+
+            nextTurn() {
+                if (this.p2Hp <= 0 || this.p1Hp <= 0) {
+                    this.endGame(this.p2Hp <= 0);
+                    return;
+                }
+                this.currentIndex++;
+                this.loadQuestion();
+            }
+
+            triggerShake() {
+                this.appEl.classList.remove('shake');
+                void this.appEl.offsetWidth;
+                this.appEl.classList.add('shake');
+                setTimeout(() => this.appEl.classList.remove('shake'), 300);
+            }
+
+            useShield() {
+                if (!this.skills.shield || this.isWaitingNext) return;
+                this.skills.shield = false; this.activeShield = true;
+                audio.playSkill(); this.updateSkillUI(); this.updateUI();
+            }
+
+            useBoost() {
+                if (!this.skills.boost || this.isWaitingNext) return;
+                this.skills.boost = false; this.activeBoost = true;
+                audio.playSkill(); this.updateSkillUI(); this.updateUI();
+            }
+
+            use5050() {
+                if (!this.skills.fiftyFifty || this.isWaitingNext || !this.currentQ) return;
+                this.skills.fiftyFifty = false; audio.playSkill();
+                let wrong = [0, 1, 2, 3].filter(i => i !== this.currentQ.correct).sort(() => Math.random() - 0.5);
+                this.choiceBtns[wrong[0]].classList.add('eliminated');
+                this.choiceBtns[wrong[1]].classList.add('eliminated');
+                this.updateSkillUI();
+            }
+
+            useFreeze() {
+                if (!this.skills.freeze || this.isWaitingNext) return;
+                this.skills.freeze = false; audio.playSkill();
+                this.maxTime += 8; this.timeLeft += 8;
+                this.updateSkillUI();
+            }
+
+            updateSkillUI() {
+                this.skillShieldBtn.disabled = !this.skills.shield;
+                this.skillBoostBtn.disabled = !this.skills.boost;
+                this.skill5050Btn.disabled = !this.skills.fiftyFifty;
+                this.skillFreezeBtn.disabled = !this.skills.freeze;
+            }
+
+            updateUI() {
+                const p1Pct = Math.max(0, (this.p1Hp / this.p1MaxHp) * 100);
+                this.p1HpBar.style.width = `${p1Pct}%`;
+                this.p1HpVal.innerText = this.p1Hp;
+
+                const p2Pct = Math.max(0, (this.p2Hp / this.p2MaxHp) * 100);
+                this.p2HpBar.style.width = `${p2Pct}%`;
+                this.p2HpVal.innerText = this.p2Hp;
+
+                this.playerScoreTag.innerText = `🏆 ĐIỂM: ${this.score}`;
+
+                if (this.combo > 1) {
+                    this.comboBadge.innerText = `COMBO x${this.combo}!`;
+                    this.comboBadge.style.display = 'inline-block';
+                } else {
+                    this.comboBadge.style.display = 'none';
+                }
+
+                this.playerShieldTag.style.display = this.activeShield ? 'inline-block' : 'none';
+                this.playerBoostTag.style.display = this.activeBoost ? 'inline-block' : 'none';
+            }
+
+            endGame(isP1Win) {
+                clearInterval(this.timer);
+                this.explanationOverlay.classList.add('hidden');
+                this.gameOverScreen.classList.remove('hidden');
+
+                const title = document.getElementById('endGameTitle');
+                const desc = document.getElementById('endGameDesc');
+
+                if (isP1Win) {
+                    audio.playVictory();
+                    title.innerText = '🏆 CHIẾN THẮNG TUYỆT ĐỐI!';
+                    title.style.color = 'var(--accent-green)';
+                    desc.innerText = 'Khẳng định tư duy lập trình xuất sắc!';
+                } else {
+                    audio.playDefeat();
+                    title.innerText = '💀 THẤT BẠI TRONG TRẬN ĐẤU!';
+                    title.style.color = 'var(--accent-red)';
+                    desc.innerText = 'Hãy xem lại kiến thức trong Learning Hub và thử lại nhé!';
+                }
+
+                document.getElementById('statCorrect').innerText = `${this.totalCorrect} / ${this.totalQuestions}`;
+                document.getElementById('statScore').innerText = this.score;
+                document.getElementById('statCombo').innerText = `x${this.maxCombo}`;
+            }
+        }
+
+        window.addEventListener('load', () => {
+            new CodeDuelGame();
+        });
+    </script>
+</body>
+
+</html>
